@@ -1,0 +1,71 @@
+{
+  "target_met": false,
+  "cases": [
+    {
+      "bytes": 32,
+      "operation": "encode",
+      "pattern": "random",
+      "z58_ns": 47.176199,
+      "strongest_baseline": "braid58",
+      "baseline_ns": 40.818412,
+      "speedup": 0.8652331655629993,
+      "target": 2.0,
+      "passed": false,
+      "all_medians_ns": {
+        "z58-fixed": 47.176199,
+        "five8": 93.307805,
+        "braid58": 40.818412
+      }
+    },
+    {
+      "bytes": 32,
+      "operation": "decode",
+      "pattern": "random",
+      "z58_ns": 33.436849,
+      "strongest_baseline": "braid58",
+      "baseline_ns": 53.966083,
+      "speedup": 1.6139703534863585,
+      "target": 2.0,
+      "passed": false,
+      "all_medians_ns": {
+        "z58-fixed": 33.436849,
+        "five8": 76.143332,
+        "braid58": 53.966083,
+        "fd-bs58": 91.949272
+      }
+    },
+    {
+      "bytes": 64,
+      "operation": "encode",
+      "pattern": "random",
+      "z58_ns": 119.537692,
+      "strongest_baseline": "braid58",
+      "baseline_ns": 121.8524,
+      "speedup": 1.0193638337939468,
+      "target": 2.0,
+      "passed": false,
+      "all_medians_ns": {
+        "z58-fixed": 119.537692,
+        "five8": 199.970043,
+        "braid58": 121.8524
+      }
+    },
+    {
+      "bytes": 64,
+      "operation": "decode",
+      "pattern": "random",
+      "z58_ns": 75.46612,
+      "strongest_baseline": "braid58",
+      "baseline_ns": 96.540412,
+      "speedup": 1.2792550087376957,
+      "target": 2.0,
+      "passed": false,
+      "all_medians_ns": {
+        "z58-fixed": 75.46612,
+        "five8": 215.115702,
+        "braid58": 96.540412,
+        "fd-bs58": 279.774677
+      }
+    }
+  ]
+}

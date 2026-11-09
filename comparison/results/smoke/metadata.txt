@@ -1,0 +1,125 @@
+z58 benchmark
+mode=smoke; not performance evidence
+seed=0x6a09e667f3bcc909
+corpus_per_case=16
+lengths=[0, 1, 2, 8, 16, 32, 64, 128, 256, 1024, 4096]
+patterns=["random", "zero", "ff", "leading-zero", "repeat"]
+samples=2
+target_sample_ns=50000
+RUSTFLAGS=
+CC=
+CFLAGS=
+compile_arch=x86_64
+compile_avx2=false
+compile_avx512f=false
+compile_avx512ifma=false
+compile_avx512vbmi=false
+
+$ rustc -Vv
+rustc 1.99.1 (58cf8f9c3 2026-10-13)
+binary: rustc
+commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+commit-date: 2026-10-13
+host: x86_64-unknown-linux-gnu
+release: 1.99.1
+LLVM version: 23.1.1
+
+$ cargo -V
+cargo 1.99.1 (5f94df478 2026-08-27)
+
+$ cc --version
+cc (Debian 14.2.0-19) 14.2.0
+Copyright (C) 2024 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+$ uname -a
+Linux cf3637fa3cf5 6.18.57 #1 SMP Tue Oct 20 21:56:04 UTC 2026 x86_64 GNU/Linux
+
+$ lscpu 
+lscpu: failed to determine number of CPUs: /sys/devices/system/cpu/possible: No such file or directory
+
+$ git rev-parse HEAD
+7f07ceb4418424cc86e42ebe2e21943f33873658
+
+$ git status --porcelain
+ M src/generic.rs
+?? .github/
+?? comparison/
+?? scripts/
+
+/etc/os-release
+PRETTY_NAME="Debian GNU/Linux 13 (trixie)"
+NAME="Debian GNU/Linux"
+VERSION_ID="13"
+VERSION="13 (trixie)"
+VERSION_CODENAME=trixie
+DEBIAN_VERSION_FULL=13.6
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+
+/proc/self/status
+Name:	z58-comparison
+Umask:	0022
+State:	R (running)
+Tgid:	2
+Ngid:	0
+Pid:	2
+PPid:	1
+TracerPid:	0
+Uid:	1000	1000	1000	1000
+Gid:	1000	1000	1000	1000
+FDSize:	64
+Groups:	 
+NStgid:	2
+NSpid:	2
+NSpgid:	1
+NSsid:	1
+Kthread:	0
+VmPeak:	    3380 kB
+VmSize:	    3344 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	    1324 kB
+VmRSS:	    1324 kB
+RssAnon:	     140 kB
+RssFile:	     668 kB
+RssShmem:	     516 kB
+VmData:	     236 kB
+VmStk:	     136 kB
+VmExe:	     468 kB
+VmLib:	    1728 kB
+VmPTE:	      48 kB
+VmSwap:	       0 kB
+HugetlbPages:	       0 kB
+CoreDumping:	0
+THP_enabled:	1
+untag_mask:	0xffffffffffffffff
+Threads:	1
+SigQ:	0/39792
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0000000000000000
+SigIgn:	0000000000001000
+SigCgt:	0000000000000440
+CapInh:	0000000000000000
+CapPrm:	0000000000000000
+CapEff:	0000000000000000
+CapBnd:	0000000000000000
+CapAmb:	0000000000000000
+NoNewPrivs:	1
+Seccomp:	2
+Seccomp_filters:	1
+Speculation_Store_Bypass:	vulnerable
+SpeculationIndirectBranch:	always enabled
+Cpus_allowed:	1ff
+Cpus_allowed_list:	0-8
+Mems_allowed:	00000000,00000001
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	88
+nonvoluntary_ctxt_switches:	12
+
+Profile: opt-level=3, lto=thin, codegen-units=1 for every Rust dependency. Braid58's upstream build.rs compiles its C kernels at the Cargo optimization level and selects its fastest supported backend from target features. No inputs, output allocation, scratch allocation or verification are timed. Each implementation is verified on all 16 inputs before and after samples. Warmup and adaptive calibration precede samples. Function call, buffer/length checks, strict validation and black_box overhead are timed. Fixed inputs share buffers with generic tests. fd-bs58 encode is not timed because it allocates String. Shared-host timings are exploratory, not an acceptance gate.

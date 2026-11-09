@@ -4,6 +4,7 @@ use crate::{
 };
 
 const RADIX: u64 = 656_356_768; // 58^5
+const POW58: [u64; 6] = [1, 58, 3_364, 195_112, 11_316_496, RADIX];
 
 /// Encode arbitrary bytes with caller-owned output and `u32` workspace.
 ///
@@ -15,11 +16,16 @@ pub fn encode(input: &[u8], output: &mut [u8], scratch: &mut [u32]) -> Result<us
     let needed = encode_scratch_len(body.len()).ok_or(Error::CapacityOverflow)?;
     check_scratch(needed, scratch.len())?;
     let mut used = 0;
-    for &byte in body {
-        let mut carry = u64::from(byte);
+    for block in body.chunks(4) {
+        let mut carry = 0u64;
+        for &byte in block {
+            carry = (carry << 8) | u64::from(byte);
+        }
+        let factor = 1u64 << (8 * block.len());
         for limb in &mut scratch[..used] {
-            // limb < 58^5, carry < 256: value < 58^5 * 256 < 2^38.
-            let value = u64::from(*limb) * 256 + carry;
+            // limb < 58^5 and carry < factor <= 2^32:
+            // value <= 58^5 * 2^32 - 1 < 2^62; quotient < factor.
+            let value = u64::from(*limb) * factor + carry;
             *limb = (value % RADIX) as u32;
             carry = value / RADIX;
         }
@@ -70,11 +76,16 @@ pub fn decode(input: &[u8], output: &mut [u8], scratch: &mut [u32]) -> Result<us
     let needed = decode_scratch_len(body.len()).ok_or(Error::CapacityOverflow)?;
     check_scratch(needed, scratch.len())?;
     let mut used = 0;
-    for &byte in body {
-        let mut carry = u64::from(DECODE[byte as usize]);
+    for block in body.chunks(5) {
+        let mut carry = 0u64;
+        for &byte in block {
+            carry = carry * 58 + u64::from(DECODE[byte as usize]);
+        }
+        let factor = POW58[block.len()];
         for limb in &mut scratch[..used] {
-            // limb <= 2^32-1, carry < 58: value <= 58*2^32-1 < 2^38.
-            let value = u64::from(*limb) * 58 + carry;
+            // limb <= 2^32-1 and carry < factor <= 58^5:
+            // value <= 2^32 * 58^5 - 1 < 2^62; high 32 bits < factor.
+            let value = u64::from(*limb) * factor + carry;
             *limb = value as u32;
             carry = value >> 32;
         }

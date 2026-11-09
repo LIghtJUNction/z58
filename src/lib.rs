@@ -141,7 +141,9 @@ const fn scaled_ceil(n: usize, mul: usize, div: usize) -> Option<usize> {
         Some(value) => value,
         None => return None,
     };
-    whole.checked_add(((n % div) * mul + div - 1) / div)
+    // The largest remainder numerator is 69_361; widen so 16-bit usize is safe too.
+    let remainder = ((n % div) as u64 * mul as u64 + div as u64 - 1) / div as u64;
+    whole.checked_add(remainder as usize)
 }
 
 /// Conservative encoded byte capacity, `ceil(n * 138 / 100)`; zero for empty input.

@@ -19,6 +19,13 @@ and a caller-owned `&mut [u32]` workspace. `encoded_capacity`, `decoded_capacity
 (`Option<usize>`), not content-dependent exact lengths. Workspace sizes count
 `u32` elements. The actual output length comes from the conversion result.
 
+```rust
+let mut text = [0u8; 8];
+let mut scratch = [0u32; 2];
+let len = z58::encode(b"hello", &mut text, &mut scratch).unwrap();
+assert_eq!(&text[..len], b"Cn8eVZg");
+```
+
 `encode32` / `encode64` and `decode32` / `decode64` need no external workspace.
 Their stack storage is bounded. Encoding produces variable-length text, at most
 44 / 88 bytes. Fixed decoders require exactly 32 / 64 decoded bytes: no padding,
@@ -43,5 +50,12 @@ tests, and boundary/error checks. The separate `comparison/` project contains
 competitor tests and reproducible benchmarks; it is excluded from this workspace
 and the published package. Fixed-size and arbitrary-length results are reported
 separately. No performance ratio is promised without measured evidence.
+
+The generic algorithm groups 4 binary bytes / 5 Base58 digits per limb pass;
+its worst-case time remains quadratic in significant input length. Fixed-size
+conversion uses independently generated coefficient sums and a bounded `u64`
+path for values with long zero prefixes. Read the [arithmetic bounds](docs/algorithm.md),
+[fixed-kernel derivation and attribution](docs/fixed-kernel.md), and
+[benchmark protocol](comparison/README.md).
 
 Licensed under [MIT](LICENSE).

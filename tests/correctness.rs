@@ -374,6 +374,52 @@ fn miri_smoke() {
         check(&reference::random(&mut seed, len));
     }
     exact_output_capacity_and_atomic_errors();
+    for n in [32, 64] {
+        for zeros in [0, 1, n - 1, n] {
+            let mut bytes = vec![255; n];
+            bytes[..zeros].fill(0);
+            check(&bytes);
+            let expected = reference::encode(&bytes);
+            let mut exact = vec![0; expected.len()];
+            if n == 32 {
+                assert_eq!(
+                    z58::encode32(bytes.as_slice().try_into().unwrap(), &mut exact),
+                    Ok(expected.len())
+                );
+            } else {
+                assert_eq!(
+                    z58::encode64(bytes.as_slice().try_into().unwrap(), &mut exact),
+                    Ok(expected.len())
+                );
+            }
+            assert_eq!(exact, expected);
+        }
+        let mut overflow = vec![0; n + 1];
+        overflow[0] = 1;
+        let text = reference::encode(&overflow);
+        if n == 32 {
+            let mut output = [0xa5; 32];
+            assert_eq!(z58::decode32(&text, &mut output), Err(Error::Overflow));
+            assert_eq!(output, [0xa5; 32]);
+        } else {
+            let mut output = [0xa5; 64];
+            assert_eq!(z58::decode64(&text, &mut output), Err(Error::Overflow));
+            assert_eq!(output, [0xa5; 64]);
+        }
+    }
+    for actual in [31, 33, 63, 65] {
+        fixed_error(
+            &vec![b'1'; actual],
+            Error::InvalidLength {
+                expected: 32,
+                actual,
+            },
+            Error::InvalidLength {
+                expected: 64,
+                actual,
+            },
+        );
+    }
     fixed_error(
         b"0",
         Error::InvalidCharacter {

@@ -1,0 +1,48 @@
+{
+  "verified_utc": "2026-11-09",
+  "primary_version_source": "https://index.crates.io/bs/58/bs58",
+  "notes": "Versions pinned in Cargo.toml; exact package checksums in Cargo.lock. Braid58 published package reports dirty=true; its immutable registry checksum, not git commit alone, identifies measured source. fd_bs58 encode allocates and is excluded from timing.",
+  "packages": [
+    {
+      "name": "bs58",
+      "version": "0.5.1",
+      "vcs": {
+        "git": {
+          "sha1": "7d3c9282d2595612e5474df93dd0e017db9b684f"
+        },
+        "path_in_vcs": ""
+      }
+    },
+    {
+      "name": "five8",
+      "version": "1.0.0",
+      "vcs": {
+        "git": {
+          "sha1": "311279fb81461df36e730458a0463a6a322042d7"
+        },
+        "path_in_vcs": "crates/five8"
+      }
+    },
+    {
+      "name": "braid58",
+      "version": "0.1.0",
+      "vcs": {
+        "git": {
+          "sha1": "8ae014f6b71c6191893c6da367d1690962211250",
+          "dirty": true
+        },
+        "path_in_vcs": ""
+      }
+    },
+    {
+      "name": "fd_bs58",
+      "version": "0.1.0",
+      "vcs": {
+        "git": {
+          "sha1": "b9038efc05cce414c45a5107c5aa4df7035b133f"
+        },
+        "path_in_vcs": ""
+      }
+    }
+  ]
+}
