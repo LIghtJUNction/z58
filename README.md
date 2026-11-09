@@ -60,8 +60,10 @@ path for values with long zero prefixes. Read the [arithmetic bounds](docs/algor
 targets and short-input regressions, are in [the results](comparison/RESULTS.md).
 
 CI covers stable/MSRV, x86-64/AArch64, bare-metal builds, Miri, and benchmark
-smoke. Tagged `vX.Y.Z` releases pass the same checks before publishing with
-`CARGO_REGISTRY_TOKEN`; GitHub Releases follow registry confirmation.
-See [release instructions](docs/release.md).
+smoke. In **Actions → Release → Run workflow**, choose `current` for the first
+release or `patch` / `minor` / `major` to automatically bump both Cargo files,
+tag, validate, and publish. A retry can choose `existing` plus its tag. The
+publishing step alone uses `CARGO_REGISTRY_TOKEN`; GitHub Releases follow
+registry confirmation. See [release instructions](docs/release.md).
 
 Licensed under [MIT](LICENSE).

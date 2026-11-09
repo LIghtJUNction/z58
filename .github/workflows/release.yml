@@ -5,9 +5,15 @@ on:
     tags: ['v*']
   workflow_dispatch:
     inputs:
-      tag:
-        description: Existing release tag (vX.Y.Z); branches and new tags are rejected
+      bump:
+        description: Publish the current version, bump it, or retry an existing tag
         required: true
+        type: choice
+        default: current
+        options: [current, patch, minor, major, existing]
+      tag:
+        description: For "existing" only, enter the already-created tag (vX.Y.Z)
+        required: false
         type: string
 
 permissions:
@@ -18,8 +24,65 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  prepare:
+    if: github.repository == 'LIghtJUNction/z58' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      commit: ${{ steps.version.outputs.commit }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true # Only the version/tag creation job may push
+      - name: Select and create the version tag
+        id: version
+        env:
+          RELEASE_BUMP: ${{ inputs.bump }}
+          EXISTING_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+          if [ "$RELEASE_BUMP" = existing ]; then
+            if [ -z "$EXISTING_TAG" ]; then
+              echo 'Select an existing vX.Y.Z tag to retry.' >&2
+              exit 1
+            fi
+            python3 scripts/release.py resolve --tag "$EXISTING_TAG"
+            tag="$EXISTING_TAG"
+            commit="$(git rev-parse "refs/tags/$tag^{commit}")"
+          else
+            if [ -n "$EXISTING_TAG" ]; then
+              echo 'The tag field is only used with the existing choice.' >&2
+              exit 1
+            fi
+            tag="$(python3 scripts/bump_version.py --mode "$RELEASE_BUMP")"
+            python3 scripts/release.py unpublished --tag "$tag"
+            if git show-ref --verify --quiet "refs/tags/$tag"; then
+              echo "Tag $tag already exists; select existing to retry it." >&2
+              exit 1
+            fi
+            if [ "$RELEASE_BUMP" != current ]; then
+              git add -- Cargo.toml Cargo.lock
+              git -c user.name='github-actions[bot]' \
+                  -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+                  commit -m "chore(release): $tag"
+              git push origin HEAD:refs/heads/main
+            fi
+            commit="$(git rev-parse HEAD)"
+            git tag "$tag" "$commit"
+            git push origin "refs/tags/$tag"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
   resolve:
-    if: github.repository == 'LIghtJUNction/z58'
+    needs: prepare
+    if: always() && github.repository == 'LIghtJUNction/z58' && (github.event_name == 'push' || needs.prepare.result == 'success')
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -29,20 +92,16 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ needs.prepare.outputs.commit || github.sha }}
           fetch-depth: 0
           persist-credentials: false
       - name: Resolve an existing tag and check its package version
         id: identity
         env:
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
-          EVENT_COMMIT: ${{ github.sha }}
-          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag || github.ref_name }}
+          RELEASE_COMMIT: ${{ needs.prepare.outputs.commit || github.sha }}
         run: |
-          if [ "$EVENT_NAME" = push ]; then
-            python3 scripts/release.py resolve --tag "$RELEASE_TAG" --commit "$EVENT_COMMIT"
-          else
-            python3 scripts/release.py resolve --tag "$RELEASE_TAG"
-          fi
+          python3 scripts/release.py resolve --tag "$RELEASE_TAG" --commit "$RELEASE_COMMIT"
 
   validate:
     needs: resolve
