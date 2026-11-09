@@ -56,6 +56,12 @@ its worst-case time remains quadratic in significant input length. Fixed-size
 conversion uses independently generated coefficient sums and a bounded `u64`
 path for values with long zero prefixes. Read the [arithmetic bounds](docs/algorithm.md),
 [fixed-kernel derivation and attribution](docs/fixed-kernel.md), and
-[benchmark protocol](comparison/README.md).
+[benchmark protocol](comparison/README.md). Full measurements, including missed
+targets and short-input regressions, are in [the results](comparison/RESULTS.md).
+
+CI covers stable/MSRV, x86-64/AArch64, bare-metal builds, Miri, and benchmark
+smoke. Tagged `vX.Y.Z` releases pass the same checks before publishing with
+`CARGO_REGISTRY_TOKEN`; GitHub Releases follow registry confirmation.
+See [release instructions](docs/release.md).
 
 Licensed under [MIT](LICENSE).

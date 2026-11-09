@@ -1,84 +1,104 @@
 # Measured results — 2026-11-09
 
-The predeclared 2× target against the strongest dedicated baseline was **not met**. Both portable and native runs retain all four failed primary cases, every other length/pattern, every ablation and every raw sample. These are exploratory measurements on a shared virtual machine, pinned to CPU 8; they are not fixed-hardware performance acceptance.
+The predeclared 2× target against the strongest dedicated baseline was **not met**. The final portable and native runs retain all four failed primary cases, every other length/pattern, every ablation and every raw sample. These are exploratory performance measurements on a shared virtual machine, pinned to CPU 8. The `verified` directory name identifies verified source reproduction and outputs; strict performance acceptance still requires the dedicated fixed hardware.
 
-## Environment and reproducibility
+## Exact source and environment
 
-Intel Xeon Platinum 8573C, Linux 6.18.57 x86-64, Rust 1.99.1 (LLVM 23.1.1), GCC 14.2.0. Rust flags were empty for portable and `-C target-cpu=native` for native. The native build enables AVX2 in five8 and AVX-512 in Braid58. Each run contains 8,100 raw samples across 900 algorithm/operation/length/pattern groups. The full predetermined corpus and timing method are in [README.md](README.md).
+Both final runs use commit [`baf8f42af22f5dd30820f545ba07bf82d87ef561`](https://github.com/LIghtJUNction/z58/commit/baf8f42af22f5dd30820f545ba07bf82d87ef561). Each result directory contains an exact `source-snapshot.json` with 21 source/configuration files and SHA-256 hashes. Every file hash recorded by the benchmark was checked against that snapshot. Changes to later report text do not alter the measured source.
 
-The native run showed substantial host noise: for example, random 32-byte generic encoding ranged from 108.90 to 582.40 ns/op and random 64-byte generic encoding had one 4,960.79 ns/op sample among roughly 238 ns/op samples. The report uses medians without removing outliers. Minima and maxima are retained in each `summary.csv`; every observation remains in `raw.csv`. Treat the ratios as this run’s observations rather than hardware-independent guarantees.
+Intel Xeon Platinum 8573C, Linux 6.18.57 x86-64, Rust 1.99.1 (LLVM 23.1.1), GCC 14.2.0. Rust flags were empty for portable and `-C target-cpu=native` for native. The native build enables AVX2 in five8 and AVX-512 in Braid58. Each run contains 8,100 raw samples across 900 algorithm/operation/length/pattern groups. The predetermined corpus and timing method are in [README.md](README.md).
+
+The portable run’s largest random 32/64-byte sample range was `braid58` 32-byte encode: 37.04–1584.41 ns/op (42.78× spread). Medians below retain all nine samples. The full minima, maxima and individual observations remain available; these shared-host ratios describe this run, not hardware-independent guarantees.
+The native run’s largest random 32/64-byte sample range was `z58-fixed` 32-byte encode: 55.22–159.75 ns/op (2.89× spread). Medians below retain all nine samples. The full minima, maxima and individual observations remain available; these shared-host ratios describe this run, not hardware-independent guarantees.
 
 ## Fixed 32/64-byte primary cases
 
-Times below are median nanoseconds per operation. Speedup is fastest dedicated baseline time divided by z58 time; a value below 1 means z58 was slower.
+Times are median nanoseconds per operation. Speedup is fastest dedicated baseline time divided by z58 time; below 1 means z58 was slower.
 
 | Profile | Bytes | Operation | z58 fixed | five8 | Braid58 | fd_bs58 | Strongest baseline / z58 | 2× target |
 | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| portable | 32 | encode | 47.18 | 93.31 | 40.82 | — | 0.87× | Miss |
-| portable | 32 | decode | 33.44 | 76.14 | 53.97 | 91.95 | 1.61× | Miss |
-| portable | 64 | encode | 119.54 | 199.97 | 121.85 | — | 1.02× | Miss |
-| portable | 64 | decode | 75.47 | 215.12 | 96.54 | 279.77 | 1.28× | Miss |
-| native | 32 | encode | 64.74 | 73.15 | 33.57 | — | 0.52× | Miss |
-| native | 32 | decode | 40.81 | 54.18 | 22.15 | 72.29 | 0.54× | Miss |
-| native | 64 | encode | 96.57 | 105.17 | 78.47 | — | 0.81× | Miss |
-| native | 64 | decode | 89.28 | 111.85 | 37.94 | 209.79 | 0.42× | Miss |
+| portable | 32 | encode | 49.38 | 85.32 | 41.68 | — | 0.84× | Miss |
+| portable | 32 | decode | 39.42 | 79.64 | 44.50 | 159.16 | 1.13× | Miss |
+| portable | 64 | encode | 126.22 | 199.97 | 125.13 | — | 0.99× | Miss |
+| portable | 64 | decode | 79.75 | 256.29 | 94.26 | 338.29 | 1.18× | Miss |
+| native | 32 | encode | 55.25 | 67.10 | 31.36 | — | 0.57× | Miss |
+| native | 32 | decode | 36.98 | 54.18 | 26.02 | 76.67 | 0.70× | Miss |
+| native | 64 | encode | 108.24 | 99.93 | 79.73 | — | 0.74× | Miss |
+| native | 64 | decode | 99.90 | 127.67 | 32.05 | 180.72 | 0.32× | Miss |
 
-The result supports retaining a small scalar implementation with explicit bounds, while leaving the 2× dedicated-codec goal open. Braid58’s native vector kernels are the strongest measured comparison. z58’s fixed conversion still evaluates scalar dot products and carry chains; the comparison identifies vectorized conversion and scheduling as the next relevant performance question. No SIMD implementation or universal-speed claim is inferred from these measurements.
+Braid58’s native vector kernels are the strongest measured comparison. z58’s fixed conversion still evaluates scalar dot products and carry chains; the measurements identify vectorized conversion and scheduling as the next performance question. The dedicated-codec 2× goal remains open. No universal-speed or SIMD implementation claim follows from these results.
 
 ## Generic lengths, including short-input regressions
 
-This table uses random inputs and compares the production generic API with the preallocated bs58 API. Fixed-width functions are excluded from these ratios.
+This table uses random inputs and compares the production generic API with the preallocated bs58 API. Fixed-width functions are excluded. All five data patterns remain in the complete CSV reports.
 
 | Bytes | Portable encode | Portable decode | Native encode | Native decode |
 | ---: | ---: | ---: | ---: | ---: |
-| 0 | 0.16× | 0.62× | 0.50× | 0.40× |
-| 1 | 0.37× | 0.56× | 0.60× | 0.96× |
-| 2 | 0.89× | 1.06× | 0.62× | 0.59× |
-| 8 | 3.03× | 1.43× | 2.59× | 1.41× |
-| 16 | 4.92× | 2.50× | 1.92× | 2.07× |
-| 32 | 7.93× | 4.47× | 15.99× | 3.89× |
-| 64 | 14.24× | 10.60× | 18.13× | 8.71× |
-| 128 | 21.31× | 14.16× | 15.74× | 9.94× |
-| 256 | 23.43× | 16.93× | 22.18× | 16.40× |
-| 1024 | 25.28× | 20.96× | 27.61× | 20.24× |
-| 4096 | 24.60× | 19.36× | 19.69× | 18.13× |
+| 0 | 0.17× | 0.57× | 0.64× | 0.47× |
+| 1 | 0.42× | 0.50× | 0.46× | 0.63× |
+| 2 | 0.81× | 0.81× | 0.64× | 0.78× |
+| 8 | 2.56× | 1.78× | 2.32× | 1.53× |
+| 16 | 4.06× | 2.22× | 3.77× | 2.20× |
+| 32 | 9.75× | 1.77× | 7.08× | 3.95× |
+| 64 | 18.31× | 7.03× | 10.91× | 6.74× |
+| 128 | 25.51× | 11.53× | 20.65× | 12.14× |
+| 256 | 24.71× | 17.52× | 26.23× | 13.97× |
+| 1024 | 19.20× | 22.80× | 19.38× | 18.86× |
+| 4096 | 24.87× | 20.72× | 17.87× | 20.01× |
 
-Empty and one-byte calls have a measurable regression against bs58, where fixed wrapper and capacity-check costs dominate useful work. Large random inputs benefit from grouped conversion, but the generic algorithm remains quadratic: larger values require more limbs on every pass. Long-input raw rows are retained through 4,096 bytes; these results do not imply linear scaling.
+Empty and very short calls can regress against bs58, where wrapper and capacity-check costs dominate useful work. Large random inputs benefit from grouped conversion, but the generic algorithm remains quadratic: each pass visits more limbs as values grow. Long-input rows are retained through 4,096 bytes; these measurements do not imply linear scaling.
 
 ## Independent optimization measurements
 
-The following portable random-input ratios compare the research routines under common wrappers. Production capacity-error handling remains separately measured in `z58-generic`. A speedup below 1 identifies a regression.
+The following portable random-input ratios compare research routines under common wrappers. Production capacity-error handling is separately measured in `z58-generic`. The arithmetic-width column is elapsed-time overhead; the other columns are speedups.
 
 | Bytes | Operation | Grouped / one-unit gain | u128 overhead at same groups | Larger groups within u128 gain |
 | ---: | --- | ---: | ---: | ---: |
-| 32 | encode | 2.33× | 2.62× time | 2.56× |
-| 32 | decode | 1.91× | 1.86× time | 1.53× |
-| 64 | encode | 3.49× | 2.93× time | 2.77× |
-| 64 | decode | 1.97× | 1.68× time | 1.77× |
-| 256 | encode | 3.86× | 2.94× time | 3.32× |
-| 256 | decode | 3.76× | 2.19× time | 3.01× |
-| 1024 | encode | 6.04× | 2.95× time | 3.72× |
-| 1024 | decode | 5.49× | 2.70× time | 5.15× |
-| 4096 | encode | 4.47× | 3.15× time | 4.74× |
-| 4096 | decode | 4.04× | 2.09× time | 7.35× |
+| 32 | encode | 2.16× | 2.41× time | 2.54× |
+| 32 | decode | 1.94× | 1.83× time | 1.28× |
+| 64 | encode | 2.27× | 2.62× time | 2.83× |
+| 64 | decode | 2.47× | 1.92× time | 1.59× |
+| 256 | encode | 3.10× | 3.52× time | 4.97× |
+| 256 | decode | 3.69× | 2.10× time | 2.67× |
+| 1024 | encode | 4.47× | 2.77× time | 3.63× |
+| 1024 | decode | 4.80× | 2.08× time | 3.23× |
+| 4096 | encode | 4.82× | 2.64× time | 3.73× |
+| 4096 | decode | 5.43× | 2.56× time | 6.58× |
 
-The experiments isolate group size, arithmetic width and fixed-size specialization. At unchanged group size, u128 arithmetic costs more than u64 here. Larger u128 groups recover that cost and improve long decoding; short inputs do not consistently benefit. The production API currently keeps u32 scratch limbs and u64 arithmetic; the larger-radix experiment remains reproducible in this comparison workspace.
+The experiments isolate group size, arithmetic width and fixed-size specialization. At unchanged group size, u128 arithmetic costs more than u64 in these samples. Larger u128 groups recover some of that cost and improve long decoding; short inputs do not consistently benefit. The production API uses u32 scratch limbs and u64 arithmetic, while the larger-radix experiment remains available for reproduction.
 
 | Fixed case | Serial radix-58⁵ | Parallel radix-58⁵ | Parallel radix-58⁴ |
 | --- | ---: | ---: | ---: |
-| 32 encode | 59.91 ns | 46.66 ns | 49.00 ns |
-| 32 decode | 45.74 ns | 36.19 ns | 31.30 ns |
-| 64 encode | 147.02 ns | 113.43 ns | 122.78 ns |
-| 64 decode | 118.99 ns | 76.40 ns | 93.36 ns |
+| 32 encode | 69.77 ns | 48.76 ns | 55.36 ns |
+| 32 decode | 88.84 ns | 33.78 ns | 36.82 ns |
+| 64 encode | 121.63 ns | 120.03 ns | 158.23 ns |
+| 64 decode | 116.47 ns | 96.85 ns | 94.91 ns |
 
-Parallel quotient expansion and full-group parsing are measured independently by operation. Radix 58⁴ does not improve all four fixed operations, so it remains an ablation instead of replacing the production radix 58⁵ kernel. Production adds word-sized zero-prefix counting and a u64 path for short numeric values; zero-heavy inputs stay in the complete result matrix.
+Parallel quotient expansion and full-group parsing are measured independently by operation. The alternative radix 58⁴ does not improve all four fixed operations consistently across both runs. Production retains radix 58⁵, word-sized zero-prefix counting and a u64 path for short numeric values. All zero-heavy cases remain in the complete matrix.
 
-## Complete evidence
+## Reproduction command
 
-- [Portable raw samples](results/exploratory-2026-11-09-portable/raw.csv), [all portable medians/ranges](results/exploratory-2026-11-09-portable/summary.csv), [portable environment and source hashes](results/exploratory-2026-11-09-portable/metadata.txt), [portable gate result](results/exploratory-2026-11-09-portable/gate.json).
-- [Native raw samples](results/exploratory-2026-11-09-native/raw.csv), [all native medians/ranges](results/exploratory-2026-11-09-native/summary.csv), [native environment and source hashes](results/exploratory-2026-11-09-native/metadata.txt), [native gate result](results/exploratory-2026-11-09-native/gate.json).
+Check out the measured commit in a separate directory, then run the locked comparison project. Its benchmark sources and dependency lockfile are also preserved in each `source-snapshot.json`.
+
+```sh
+git clone https://github.com/LIghtJUNction/z58.git z58-reproduce
+cd z58-reproduce
+git checkout baf8f42af22f5dd30820f545ba07bf82d87ef561
+cargo run --release --locked --manifest-path comparison/Cargo.toml -- --output /tmp/z58-portable
+RUSTFLAGS='-C target-cpu=native' cargo run --release --locked --manifest-path comparison/Cargo.toml -- --output /tmp/z58-native
+```
+
+## Complete final evidence
+
+- [Portable raw samples](results/verified-2026-11-09-portable/raw.csv), [all portable medians/ranges](results/verified-2026-11-09-portable/summary.csv), [portable environment and source hashes](results/verified-2026-11-09-portable/metadata.txt), [portable gate result](results/verified-2026-11-09-portable/gate.json), [portable exact source](results/verified-2026-11-09-portable/source-snapshot.json).
+- [Native raw samples](results/verified-2026-11-09-native/raw.csv), [all native medians/ranges](results/verified-2026-11-09-native/summary.csv), [native environment and source hashes](results/verified-2026-11-09-native/metadata.txt), [native gate result](results/verified-2026-11-09-native/gate.json), [native exact source](results/verified-2026-11-09-native/source-snapshot.json).
 - [Exact baseline versions, package checksums, upstream commits and licenses](baselines.json). Each result directory also contains the dependency lockfile.
 
-The native release differential suite passed after compilation with host ISA features. It checks the same outputs and accepted/rejected byte strings as portable tests, including all invalid byte values at every position of valid 32/64-byte encodings, extra leading ones, overflow and wrong final widths. Braid58’s measured package reports a dirty source tree, so its registry package checksum is the exact source identifier.
+Every algorithm’s output was verified against the independent reference before and after timing. Portable and native differential tests also check accepted/rejected byte strings, including every invalid byte value at every position of valid 32/64-byte encodings, extra leading ones, overflow and wrong final widths. Braid58’s published package reports a dirty source tree, so its registry package checksum is the exact dependency identifier.
 
-Ablation table-module sharing and `div_ceil` spelling were cleaned up after these measurements; production source hashes in both runs identify the measured kernel. No observed timing row was deleted or overwritten.
+## Earlier exploratory runs retained
+
+The earlier runs preceded final harness lint cleanup and the capacity helper’s wider remainder arithmetic. Their observations were not overwritten or removed. Their hashes and partial Git states are preserved as historical experiment metadata; the exact-source snapshots above identify the final reproducible measurement.
+
+- [Earlier portable raw data](results/exploratory-2026-11-09-portable/raw.csv), [summary](results/exploratory-2026-11-09-portable/summary.csv), [metadata](results/exploratory-2026-11-09-portable/metadata.txt), [failed target result](results/exploratory-2026-11-09-portable/gate.json).
+- [Earlier native raw data](results/exploratory-2026-11-09-native/raw.csv), [summary](results/exploratory-2026-11-09-native/summary.csv), [metadata](results/exploratory-2026-11-09-native/metadata.txt), [failed target result](results/exploratory-2026-11-09-native/gate.json).

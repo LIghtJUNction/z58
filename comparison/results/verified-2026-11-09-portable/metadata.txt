@@ -1,0 +1,171 @@
+z58 benchmark
+mode=full
+seed=0x6a09e667f3bcc909
+corpus_per_case=16
+lengths=[0, 1, 2, 8, 16, 32, 64, 128, 256, 1024, 4096]
+patterns=["random", "zero", "ff", "leading-zero", "repeat"]
+samples=9
+target_sample_ns=2000000
+RUSTFLAGS=
+CC=
+CFLAGS=
+compile_arch=x86_64
+compile_avx2=false
+compile_avx512f=false
+compile_avx512ifma=false
+compile_avx512vbmi=false
+
+$ rustc -Vv
+rustc 1.99.1 (58cf8f9c3 2026-10-13)
+binary: rustc
+commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+commit-date: 2026-10-13
+host: x86_64-unknown-linux-gnu
+release: 1.99.1
+LLVM version: 23.1.1
+
+$ cargo -V
+cargo 1.99.1 (5f94df478 2026-08-27)
+
+$ cc --version
+cc (Debian 14.2.0-19) 14.2.0
+Copyright (C) 2024 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+$ uname -a
+Linux cf3637fa3cf5 6.18.57 #1 SMP Tue Oct 20 21:56:04 UTC 2026 x86_64 GNU/Linux
+
+$ lscpu 
+lscpu: failed to determine number of CPUs: /sys/devices/system/cpu/possible: No such file or directory
+
+$ git rev-parse HEAD
+baf8f42af22f5dd30820f545ba07bf82d87ef561
+
+$ git status --porcelain
+M  comparison/results/exploratory-2026-11-09-native/summary.csv
+M  comparison/results/exploratory-2026-11-09-portable/summary.csv
+?? .github/
+?? comparison/results/verified-2026-11-09-native/
+?? comparison/results/verified-2026-11-09-portable/
+?? scripts/
+
+/etc/os-release
+PRETTY_NAME="Debian GNU/Linux 13 (trixie)"
+NAME="Debian GNU/Linux"
+VERSION_ID="13"
+VERSION="13 (trixie)"
+VERSION_CODENAME=trixie
+DEBIAN_VERSION_FULL=13.6
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+
+/proc/self/status
+Name:	z58-comparison
+Umask:	0022
+State:	R (running)
+Tgid:	2
+Ngid:	0
+Pid:	2
+PPid:	1
+TracerPid:	0
+Uid:	1000	1000	1000	1000
+Gid:	1000	1000	1000	1000
+FDSize:	64
+Groups:	 
+NStgid:	2
+NSpid:	2
+NSpgid:	1
+NSsid:	1
+Kthread:	0
+VmPeak:	    3484 kB
+VmSize:	    3448 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	    1372 kB
+VmRSS:	    1372 kB
+RssAnon:	     144 kB
+RssFile:	     668 kB
+RssShmem:	     560 kB
+VmData:	     232 kB
+VmStk:	     136 kB
+VmExe:	     564 kB
+VmLib:	    1728 kB
+VmPTE:	      44 kB
+VmSwap:	       0 kB
+HugetlbPages:	       0 kB
+CoreDumping:	0
+THP_enabled:	1
+untag_mask:	0xffffffffffffffff
+Threads:	1
+SigQ:	0/39792
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0000000000000000
+SigIgn:	0000000000001000
+SigCgt:	0000000000000440
+CapInh:	0000000000000000
+CapPrm:	0000000000000000
+CapEff:	0000000000000000
+CapBnd:	0000000000000000
+CapAmb:	0000000000000000
+NoNewPrivs:	1
+Seccomp:	2
+Seccomp_filters:	1
+Speculation_Store_Bypass:	vulnerable
+SpeculationIndirectBranch:	always enabled
+Cpus_allowed:	100
+Cpus_allowed_list:	8
+Mems_allowed:	00000000,00000001
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	123
+nonvoluntary_ctxt_switches:	29
+
+/proc/cpuinfo (first processor)
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 207
+model name	: INTEL(R) XEON(R) PLATINUM 8573C
+stepping	: 2
+microcode	: 0x1
+cpu MHz		: 2300.000
+cache size	: 266240 KB
+physical id	: 0
+siblings	: 9
+core id		: 0
+cpu cores	: 9
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 28
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx_vnni avx512_bf16 arat avx512vbmi umip waitpkg avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid cldemote movdiri movdir64b fsrm serialize tsxldtrk avx512_fp16 arch_capabilities
+bugs		: spectre_v1 spectre_v2 spec_store_bypass swapgs retbleed bhi spectre_v2_user its
+bogomips	: 4600.00
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 46 bits physical, 57 bits virtual
+power management:
+
+Measured-source SHA-256 hashes
+9deec33123e03c16fe8f4757da1b2c015e606f49afd4ab5f9dbf51a445f12808  /workspace/scratch/eee9fb10de2f/z58/comparison/../Cargo.toml
+a82d2bf128c86d45a3fc84e391f62802c23390b341d57faaf9f3b43c2fc03af4  /workspace/scratch/eee9fb10de2f/z58/comparison/../src/fixed.rs
+4b409be7dc87a2c51c9c5a877df85b4fdcb0083e89d0afa3f9bebeccb305ab12  /workspace/scratch/eee9fb10de2f/z58/comparison/../src/fixed_tables.rs
+244ea4676734bbf0964aa4ad7896396a08414866861c313395bcde8ed32b6fd0  /workspace/scratch/eee9fb10de2f/z58/comparison/../src/generic.rs
+038eee4cf02575b054fdea8a9ec42ead02ae4a14592afdf25fca1d61319bb278  /workspace/scratch/eee9fb10de2f/z58/comparison/../src/lib.rs
+4df004e9606b18554242546f75bbe3adf271bff188c1734351d62772afc52d87  /workspace/scratch/eee9fb10de2f/z58/comparison/Cargo.lock
+ff49f119d20dfe55dc812a03b417cb9239ebbda6d52017fc0a2659e8ae868f61  /workspace/scratch/eee9fb10de2f/z58/comparison/Cargo.toml
+3fd5e621aca7089db9097adda3ce2e531dfb5d8b909d09766f4c69709db3e862  /workspace/scratch/eee9fb10de2f/z58/comparison/src/ablations/radix4_parallel.rs
+caf018bd8163ceacfd4a8191417964353401645caf65ce5448d84b3cba97ed10  /workspace/scratch/eee9fb10de2f/z58/comparison/src/ablations/radix4_tables.rs
+547e6c257e6a4211617c32e42f17f9d072de8cfe871e359a9024b597efc04839  /workspace/scratch/eee9fb10de2f/z58/comparison/src/ablations/radix5_parallel.rs
+0678fe60109efb29f5df7a80050936a30ba4858ce0fe60121e77d3d1eaeafab1  /workspace/scratch/eee9fb10de2f/z58/comparison/src/ablations/radix5_serial.rs
+cfb3841b53c833620e9fc74d2f637c3aef6011a06d6438acc789121f38aeb62c  /workspace/scratch/eee9fb10de2f/z58/comparison/src/lib.rs
+602aacdff50f460fe25502e582333dc18e915100da05b38718b33c55020b1658  /workspace/scratch/eee9fb10de2f/z58/comparison/src/main.rs
+232f5022c3efee6bd7aa68565931f6046561cfb580b67e2f5b13b029e4a82b23  /workspace/scratch/eee9fb10de2f/z58/comparison/tests/differential.rs
+
+Profile: opt-level=3, lto=thin, codegen-units=1 for every Rust dependency. Braid58's upstream build.rs compiles its C kernels at the Cargo optimization level and selects its fastest supported backend from target features. No inputs, output allocation, scratch allocation or verification are timed. Each implementation is verified on all 16 inputs before and after samples. Warmup and adaptive calibration precede samples. Function call, buffer/length checks, strict validation and black_box overhead are timed. Fixed inputs share buffers with generic tests. fd-bs58 encode is not timed because it allocates String. Shared-host timings are exploratory, not an acceptance gate.

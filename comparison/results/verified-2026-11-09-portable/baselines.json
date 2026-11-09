@@ -1,0 +1,77 @@
+{
+  "verified_utc": "2026-11-09",
+  "primary_version_source": "https://index.crates.io/bs/58/bs58",
+  "notes": "Versions pinned in Cargo.toml; exact package checksums in Cargo.lock. Braid58 published package reports dirty=true; its immutable registry checksum, not git commit alone, identifies measured source. fd_bs58 encode allocates and is excluded from timing.",
+  "packages": [
+    {
+      "name": "bs58",
+      "version": "0.5.1",
+      "vcs": {
+        "git": {
+          "sha1": "7d3c9282d2595612e5474df93dd0e017db9b684f"
+        },
+        "path_in_vcs": ""
+      },
+      "license": "MIT/Apache-2.0",
+      "repository": "https://github.com/Nullus157/bs58-rs",
+      "registry_checksum": "bf88ba1141d185c399bee5288d850d63b8369520c1eafc32a0430b5b6c287bf4",
+      "registry_index": "https://index.crates.io/bs/58/bs58"
+    },
+    {
+      "name": "five8",
+      "version": "1.0.0",
+      "vcs": {
+        "git": {
+          "sha1": "311279fb81461df36e730458a0463a6a322042d7"
+        },
+        "path_in_vcs": "crates/five8"
+      },
+      "license": "MIT",
+      "repository": "https://github.com/kevinheavey/five8",
+      "registry_checksum": "23f76610e969fa1784327ded240f1e28a3fd9520c9cec93b636fcf62dd37f772",
+      "registry_index": "https://index.crates.io/fi/ve/five8"
+    },
+    {
+      "name": "braid58",
+      "version": "0.1.0",
+      "vcs": {
+        "git": {
+          "sha1": "8ae014f6b71c6191893c6da367d1690962211250",
+          "dirty": true
+        },
+        "path_in_vcs": ""
+      },
+      "license": "MIT",
+      "repository": "https://github.com/Rubenduburck/braid58",
+      "registry_checksum": "61e6bf77f7e2e4561811273b31376824dfbe5dd167295ffb5ceacf74268fafb9",
+      "registry_index": "https://index.crates.io/br/ai/braid58"
+    },
+    {
+      "name": "fd_bs58",
+      "version": "0.1.0",
+      "vcs": {
+        "git": {
+          "sha1": "b9038efc05cce414c45a5107c5aa4df7035b133f"
+        },
+        "path_in_vcs": ""
+      },
+      "license": "Apache-2.0",
+      "repository": "https://github.com/Lou-Kamades/fd_bs58",
+      "registry_checksum": "fdaac1b30ff95de4562a79ae990f91ac7bf2062d7313cc25c58987762c8e8160",
+      "registry_index": "https://index.crates.io/fd/_b/fd_bs58"
+    },
+    {
+      "name": "five8_core",
+      "version": "1.0.0",
+      "license": "MIT",
+      "repository": "https://github.com/kevinheavey/five8",
+      "vcs": {
+        "git": {
+          "sha1": "311279fb81461df36e730458a0463a6a322042d7"
+        },
+        "path_in_vcs": "crates/five8_core"
+      },
+      "registry_checksum": "059c31d7d36c43fe39d89e55711858b4da8be7eb6dabac23c7289b1a19489406"
+    }
+  ]
+}
