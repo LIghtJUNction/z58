@@ -1,0 +1,136 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      commit:
+        description: Exact commit to validate for a release
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  style-and-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.commit || github.sha }}
+          persist-credentials: false
+      - name: Install stable tooling
+        run: rustup toolchain install stable --profile minimal --component rustfmt,clippy
+      - run: cargo +stable fmt --all -- --check
+      - run: cargo +stable fmt --manifest-path comparison/Cargo.toml --all -- --check
+      - name: Reproduce fixed-kernel coefficients and arithmetic bounds
+        run: python3 tools/gen_fixed.py --check
+      - run: cargo +stable clippy --all-targets --locked -- -D warnings
+      - name: Check release policy scripts
+        run: python3 -m unittest discover -s scripts -p 'test_*.py' -v
+      - name: Check dependency and package boundaries
+        run: python3 scripts/check_package.py
+      - name: Verify publishable archive
+        run: cargo +stable package --locked
+
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+        toolchain: [stable, '1.70.0']
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.commit || github.sha }}
+          persist-credentials: false
+      - run: rustup toolchain install "$RUST_VERSION" --profile minimal
+        env:
+          RUST_VERSION: ${{ matrix.toolchain }}
+      - run: cargo +"$RUST_VERSION" test --all-targets --locked
+        env:
+          RUST_VERSION: ${{ matrix.toolchain }}
+      - run: cargo +"$RUST_VERSION" test --release --all-targets --locked
+        env:
+          RUST_VERSION: ${{ matrix.toolchain }}
+      - run: cargo +"$RUST_VERSION" test --doc --locked
+        env:
+          RUST_VERSION: ${{ matrix.toolchain }}
+
+  bare-metal:
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: [stable, '1.70.0']
+        target: [thumbv7em-none-eabi, aarch64-unknown-none]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.commit || github.sha }}
+          persist-credentials: false
+      - name: Install bare-metal target
+        env:
+          RUST_VERSION: ${{ matrix.toolchain }}
+          RUST_TARGET: ${{ matrix.target }}
+        run: rustup toolchain install "$RUST_VERSION" --profile minimal --target "$RUST_TARGET"
+      - name: Compile using core only
+        env:
+          RUST_VERSION: ${{ matrix.toolchain }}
+          RUST_TARGET: ${{ matrix.target }}
+        run: cargo +"$RUST_VERSION" build --lib --release --locked --target "$RUST_TARGET"
+
+  miri:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.commit || github.sha }}
+          persist-credentials: false
+      - run: rustup toolchain install nightly --profile minimal --component miri
+      - run: cargo +nightly miri setup
+      - run: cargo +nightly miri test --test correctness --locked miri_smoke
+
+  comparison:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.commit || github.sha }}
+          persist-credentials: false
+      - run: rustup toolchain install stable --profile minimal
+      - name: Competitor differential tests (portable)
+        run: cargo +stable test --locked --manifest-path comparison/Cargo.toml
+      - name: Benchmark smoke (portable)
+        run: cargo +stable run --release --locked --manifest-path comparison/Cargo.toml -- --smoke --output comparison/results/smoke-portable
+      - name: Competitor differential tests (native hardware)
+        env:
+          RUSTFLAGS: -C target-cpu=native
+        run: cargo +stable test --release --locked --manifest-path comparison/Cargo.toml
+      - name: Benchmark smoke (native hardware)
+        env:
+          RUSTFLAGS: -C target-cpu=native
+        run: cargo +stable run --release --locked --manifest-path comparison/Cargo.toml -- --smoke --output comparison/results/smoke-native
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: benchmark-smoke-${{ matrix.runner }}
+          path: comparison/results/smoke-*
+          if-no-files-found: error
+          retention-days: 30
