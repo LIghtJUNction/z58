@@ -2,7 +2,9 @@ name: Release
 
 on:
   push:
+    branches: [main]
     tags: ['v*']
+    paths: [rust-toolchain.toml]
   workflow_dispatch:
     inputs:
       bump:
@@ -25,7 +27,7 @@ concurrency:
 
 jobs:
   prepare:
-    if: github.repository == 'LIghtJUNction/z58' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    if: github.repository == 'LIghtJUNction/z58' && github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -42,7 +44,7 @@ jobs:
       - name: Select and create the version tag
         id: version
         env:
-          RELEASE_BUMP: ${{ inputs.bump }}
+          RELEASE_BUMP: ${{ inputs.bump || 'patch' }}
           EXISTING_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
