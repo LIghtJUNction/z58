@@ -69,7 +69,7 @@ jobs:
               exit 1
             fi
             if [ "$RELEASE_BUMP" != current ]; then
-              git add -- Cargo.toml Cargo.lock
+              git add -- Cargo.toml Cargo.lock comparison/Cargo.lock
               git -c user.name='github-actions[bot]' \
                   -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
                   commit -m "chore(release): $tag"
