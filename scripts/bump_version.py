@@ -58,11 +58,12 @@ def rewrite(manifest_text, lock_text, mode):
     return chosen, new_manifest, new_lock
 
 
-def rewrite_comparison_lock(lock_text, current, chosen):
+def rewrite_comparison_lock(lock_text, chosen):
     lock = tomllib.loads(lock_text)
     roots = [item for item in lock["package"] if item["name"] == "z58"]
-    if len(roots) != 1 or roots[0]["version"] != current or "source" in roots[0]:
-        raise ValueError("comparison/Cargo.lock does not match the z58 package version")
+    if len(roots) != 1 or "source" in roots[0] or not VERSION.fullmatch(roots[0]["version"]):
+        raise ValueError("comparison/Cargo.lock must contain exactly one valid local z58 package")
+    current = roots[0]["version"]
     before = f'name = "z58"\nversion = "{current}"'
     after = f'name = "z58"\nversion = "{chosen}"'
     if lock_text.count(before) != 1:
@@ -83,7 +84,7 @@ def main():
     version, manifest, lock = rewrite(manifest_path.read_text(), lock_path.read_text(), args.mode)
     if args.mode != "current":
         comparison_path = ROOT / "comparison" / "Cargo.lock"
-        comparison = rewrite_comparison_lock(comparison_path.read_text(), old_version, version) if comparison_path.exists() else None
+        comparison = rewrite_comparison_lock(comparison_path.read_text(), version) if comparison_path.exists() else None
         manifest_path.write_text(manifest)
         lock_path.write_text(lock)
         if comparison is not None:
