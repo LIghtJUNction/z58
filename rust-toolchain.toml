@@ -5,3 +5,4 @@ components = ["rustfmt", "clippy"]
 # Release automation now updates the comparison lockfile.
 # Release bump also refreshes the comparison workspace lock.
 # Comparison lock recovery is validated in release automation.
+# Comparison lock regression assertion corrected.
