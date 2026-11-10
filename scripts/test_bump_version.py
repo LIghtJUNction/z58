@@ -2,7 +2,7 @@
 
 import unittest
 
-from bump_version import rewrite
+from bump_version import rewrite, rewrite_comparison_lock
 
 
 MANIFEST = '''[package]
@@ -15,6 +15,18 @@ LOCK = '''version = 3
 [[package]]
 name = "z58"
 version = "0.1.0"
+'''
+
+COMPARISON_LOCK = '''version = 4
+
+[[package]]
+name = "z58"
+version = "0.1.0"
+
+[[package]]
+name = "z58-comparison"
+version = "0.0.0"
+dependencies = ["z58"]
 '''
 
 
@@ -35,6 +47,11 @@ class BumpVersionTests(unittest.TestCase):
         lock = LOCK.replace("0.1.0", "2.7.9")
         self.assertEqual(rewrite(manifest, lock, "minor")[0], "2.8.0")
         self.assertEqual(rewrite(manifest, lock, "major")[0], "3.0.0")
+
+    def test_comparison_lock_updates_only_the_local_crate(self):
+        updated = rewrite_comparison_lock(COMPARISON_LOCK, "0.1.0", "0.1.1")
+        self.assertIn('name = "z58"\\nversion = "0.1.1"', updated)
+        self.assertIn('name = "z58-comparison"\\nversion = "0.0.0"', updated)
 
     def test_rejects_mismatched_lock(self):
         with self.assertRaisesRegex(ValueError, "Cargo.lock"):
