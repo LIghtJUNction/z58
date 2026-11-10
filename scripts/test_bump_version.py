@@ -50,8 +50,8 @@ class BumpVersionTests(unittest.TestCase):
 
     def test_comparison_lock_updates_only_the_local_crate(self):
         updated = rewrite_comparison_lock(COMPARISON_LOCK, "0.1.0", "0.1.1")
-        self.assertIn('name = "z58"\\nversion = "0.1.1"', updated)
-        self.assertIn('name = "z58-comparison"\\nversion = "0.0.0"', updated)
+        self.assertIn('name = "z58"\nversion = "0.1.1"', updated)
+        self.assertIn('name = "z58-comparison"\nversion = "0.0.0"', updated)
 
     def test_rejects_mismatched_lock(self):
         with self.assertRaisesRegex(ValueError, "Cargo.lock"):
