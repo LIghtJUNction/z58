@@ -49,7 +49,7 @@ class BumpVersionTests(unittest.TestCase):
         self.assertEqual(rewrite(manifest, lock, "major")[0], "3.0.0")
 
     def test_comparison_lock_updates_only_the_local_crate(self):
-        updated = rewrite_comparison_lock(COMPARISON_LOCK, "0.1.0", "0.1.1")
+        updated = rewrite_comparison_lock(COMPARISON_LOCK, "0.1.2")
         self.assertIn('name = "z58"\nversion = "0.1.1"', updated)
         self.assertIn('name = "z58-comparison"\nversion = "0.0.0"', updated)
 
