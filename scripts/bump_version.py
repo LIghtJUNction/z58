@@ -58,16 +58,36 @@ def rewrite(manifest_text, lock_text, mode):
     return chosen, new_manifest, new_lock
 
 
+def rewrite_comparison_lock(lock_text, current, chosen):
+    lock = tomllib.loads(lock_text)
+    roots = [item for item in lock["package"] if item["name"] == "z58"]
+    if len(roots) != 1 or roots[0]["version"] != current or "source" in roots[0]:
+        raise ValueError("comparison/Cargo.lock does not match the z58 package version")
+    before = f'name = "z58"\nversion = "{current}"'
+    after = f'name = "z58"\nversion = "{chosen}"'
+    if lock_text.count(before) != 1:
+        raise ValueError("Expected exactly one z58 path-package entry in comparison/Cargo.lock")
+    updated = lock_text.replace(before, after)
+    if [p for p in tomllib.loads(updated)["package"] if p["name"] == "z58"][0]["version"] != chosen:
+        raise ValueError("comparison/Cargo.lock was not updated as expected")
+    return updated
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode", choices=("current", "patch", "minor", "major"), required=True)
     args = parser.parse_args()
     manifest_path = ROOT / "Cargo.toml"
     lock_path = ROOT / "Cargo.lock"
+    old_version = tomllib.loads(manifest_path.read_text())["package"]["version"]
     version, manifest, lock = rewrite(manifest_path.read_text(), lock_path.read_text(), args.mode)
     if args.mode != "current":
+        comparison_path = ROOT / "comparison" / "Cargo.lock"
+        comparison = rewrite_comparison_lock(comparison_path.read_text(), old_version, version) if comparison_path.exists() else None
         manifest_path.write_text(manifest)
         lock_path.write_text(lock)
+        if comparison is not None:
+            comparison_path.write_text(comparison)
     print(f"v{version}")
 
 
