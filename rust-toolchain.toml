@@ -3,3 +3,4 @@ channel = "1.99.1"
 profile = "minimal"
 components = ["rustfmt", "clippy"]
 # Release automation now updates the comparison lockfile.
+# Release bump also refreshes the comparison workspace lock.
