@@ -18,7 +18,7 @@ def check_manifest(manifest, root):
         raise ValueError("Custom build scripts are not allowed")
     if (root / "build.rs").exists():
         raise ValueError("build.rs is not allowed")
-    if manifest["package"].get("rust-version") != "1.70":
+    if manifest["package"].get("rust-version") != "1.99.1":
         raise ValueError("Update the MSRV matrix together with rust-version")
     if "comparison" not in manifest.get("workspace", {}).get("exclude", []):
         raise ValueError("comparison must be excluded from the published workspace")

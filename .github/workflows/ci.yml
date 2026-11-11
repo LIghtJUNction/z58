@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ubuntu-24.04, ubuntu-24.04-arm]
-        toolchain: [stable, '1.70.0']
+        toolchain: [stable, '1.99.1']
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 15
     steps:
@@ -71,7 +71,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        toolchain: [stable, '1.70.0']
+        toolchain: [stable, '1.99.1']
         target: [thumbv7em-none-eabi, aarch64-unknown-none]
     runs-on: ubuntu-24.04
     timeout-minutes: 10

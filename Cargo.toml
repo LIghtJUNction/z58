@@ -1,8 +1,8 @@
 [package]
 name = "z58"
 version = "0.1.3"
-edition = "2021"
-rust-version = "1.70"
+edition = "2024"
+rust-version = "1.99.1"
 description = "Zero-dependency, allocation-free Bitcoin Base58 with fixed-size fast paths"
 license = "MIT"
 repository = "https://github.com/LIghtJUNction/z58"
@@ -13,7 +13,7 @@ include = ["src/**", "tests/**", "Cargo.toml", "Cargo.lock", "README.md", "LICEN
 [workspace]
 members = ["."]
 exclude = ["comparison"]
-resolver = "2"
+resolver = "3"
 
 [dependencies]
 
