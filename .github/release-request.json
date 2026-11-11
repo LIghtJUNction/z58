@@ -1,4 +1,5 @@
 {
   "bump": "patch",
-  "expected_version": "0.1.5"
+  "expected_version": "0.1.5",
+  "request_id": "patch-0.1.6-2026-11-11"
 }
