@@ -9,8 +9,8 @@ mod tables;
 fn leading(input: &[u8], byte: u8) -> usize {
     let mask = u64::from_ne_bytes([byte; 8]);
     let mut count = 0;
-    let mut chunks = input.chunks_exact(8);
-    for chunk in chunks.by_ref() {
+    let (chunks, remainder) = input.as_chunks::<8>();
+    for chunk in chunks {
         let value = u64::from_be_bytes([
             chunk[0], chunk[1], chunk[2], chunk[3], chunk[4], chunk[5], chunk[6], chunk[7],
         ]) ^ mask;
@@ -20,8 +20,7 @@ fn leading(input: &[u8], byte: u8) -> usize {
         count += 8;
     }
     count
-        + chunks
-            .remainder()
+        + remainder
             .iter()
             .take_while(|&&b| b == byte)
             .count()
@@ -73,7 +72,7 @@ fn short_decode<const N: usize>(
         }
         value = value * 58 + digit as u64;
     }
-    let size = (64 - value.leading_zeros() as usize + 7) / 8;
+    let size = (64 - value.leading_zeros() as usize).div_ceil(8);
     let actual = zeros + size;
     if actual != N {
         return Err(Error::InvalidLength {
@@ -90,7 +89,7 @@ fn short_decode<const N: usize>(
 #[inline]
 fn words<const N: usize, const W: usize>(input: &[u8; N]) -> [u64; W] {
     let mut out = [0; W];
-    for (word, chunk) in out.iter_mut().rev().zip(input.chunks_exact(4)) {
+    for (word, chunk) in out.iter_mut().rev().zip(input.as_chunks::<4>().0) {
         *word = u32::from_be_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]) as u64;
     }
     out
@@ -103,7 +102,7 @@ fn finish_encode<const D: usize, const T: usize>(
     output: &mut [u8],
 ) -> Result<usize, Error> {
     let mut text = [0u8; T];
-    for (value, chunk) in digits.iter().rev().zip(text.chunks_exact_mut(5)) {
+    for (value, chunk) in digits.iter().rev().zip(text.as_chunks_mut::<5>().0) {
         let value = *value;
         let q1 = value / 58;
         let q2 = value / 3364;
@@ -189,7 +188,7 @@ fn finish_decode<const N: usize, const W: usize>(
         return Err(Error::Overflow);
     }
     let mut bytes = [0u8; N];
-    for (word, chunk) in words.iter().rev().zip(bytes.chunks_exact_mut(4)) {
+    for (word, chunk) in words.iter().rev().zip(bytes.as_chunks_mut::<4>().0) {
         chunk.copy_from_slice(&word.to_be_bytes());
     }
     let binary_zeros = leading(&bytes, 0);
