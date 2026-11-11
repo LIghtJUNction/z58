@@ -350,13 +350,13 @@ fn checked_capacity_boundaries() {
         usize::MAX / 138 * 100 + 99,
     ]) {
         let wide = n as u128;
-        let cap = (wide * 138 + 99) / 100;
+        let cap = (wide * 138).div_ceil(100);
         let expected = usize::try_from(cap).ok();
         assert_eq!(z58::encoded_capacity(n), expected);
         assert_eq!(z58::decoded_capacity(n), Some(n));
         assert_eq!(
             z58::encode_scratch_len(n),
-            Some(((wide * 138 + 499) / 500) as usize)
+            Some((wide * 138).div_ceil(500) as usize)
         );
         assert_eq!(
             z58::decode_scratch_len(n),

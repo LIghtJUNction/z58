@@ -19,11 +19,7 @@ fn leading(input: &[u8], byte: u8) -> usize {
         }
         count += 8;
     }
-    count
-        + remainder
-            .iter()
-            .take_while(|&&b| b == byte)
-            .count()
+    count + remainder.iter().take_while(|&&b| b == byte).count()
 }
 
 #[inline]
