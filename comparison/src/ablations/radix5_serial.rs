@@ -2,7 +2,7 @@
 // Radix-dot-product prior art: Firedancer fd_base58 (Apache-2.0) and five8 (MIT).
 // Comparison-only ablation; see docs/fixed-kernel.md for the bounds.
 use crate::fixed_tables as tables;
-use crate::{Error, ALPHABET, DECODE};
+use crate::{ALPHABET, DECODE, Error};
 
 #[inline]
 fn words<const N: usize, const W: usize>(input: &[u8; N]) -> [u64; W] {

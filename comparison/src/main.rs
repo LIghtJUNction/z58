@@ -134,10 +134,21 @@ fn metadata(directory: &Path, smoke: bool) {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let mut text = format!(
         "z58 benchmark\nmode={}\nseed={SEED:#018x}\ncorpus_per_case={CORPUS}\nlengths={LENGTHS:?}\npatterns={PATTERNS:?}\nsamples={}\ntarget_sample_ns={}\nRUSTFLAGS={}\nCC={}\nCFLAGS={}\ncompile_arch={}\ncompile_avx2={}\ncompile_avx512f={}\ncompile_avx512ifma={}\ncompile_avx512vbmi={}\n",
-        if smoke { "smoke; not performance evidence" } else { "full" },
-        if smoke { 2 } else { 9 }, if smoke { 50_000 } else { 2_000_000 },
-        env::var("RUSTFLAGS").unwrap_or_default(), env::var("CC").unwrap_or_default(), env::var("CFLAGS").unwrap_or_default(), env::consts::ARCH,
-        cfg!(target_feature="avx2"), cfg!(target_feature="avx512f"), cfg!(target_feature="avx512ifma"), cfg!(target_feature="avx512vbmi"),
+        if smoke {
+            "smoke; not performance evidence"
+        } else {
+            "full"
+        },
+        if smoke { 2 } else { 9 },
+        if smoke { 50_000 } else { 2_000_000 },
+        env::var("RUSTFLAGS").unwrap_or_default(),
+        env::var("CC").unwrap_or_default(),
+        env::var("CFLAGS").unwrap_or_default(),
+        env::consts::ARCH,
+        cfg!(target_feature = "avx2"),
+        cfg!(target_feature = "avx512f"),
+        cfg!(target_feature = "avx512ifma"),
+        cfg!(target_feature = "avx512vbmi"),
     );
     for (name, args) in [
         ("rustc", vec!["-Vv"]),

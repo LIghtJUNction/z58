@@ -1,6 +1,6 @@
 use crate::{
-    check_output, check_scratch, decode_scratch_len, encode_scratch_len, validate, Error, ALPHABET,
-    DECODE,
+    ALPHABET, DECODE, Error, check_output, check_scratch, decode_scratch_len, encode_scratch_len,
+    validate,
 };
 
 const RADIX: u64 = 656_356_768; // 58^5

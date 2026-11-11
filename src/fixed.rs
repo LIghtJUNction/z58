@@ -1,7 +1,7 @@
 // Fixed-size base conversion using independently generated integer powers.
 // Radix-dot-product prior art: Firedancer fd_base58 (Apache-2.0) and five8 (MIT).
 // See docs/fixed-kernel.md and tools/gen_fixed.py for bounds and derivation.
-use crate::{Error, ALPHABET, DECODE};
+use crate::{ALPHABET, DECODE, Error};
 #[path = "fixed_tables.rs"]
 mod tables;
 

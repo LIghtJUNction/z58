@@ -1,7 +1,7 @@
 // Fixed-size base conversion using independently generated integer powers.
 // Radix-dot-product prior art: Firedancer fd_base58 (Apache-2.0) and five8 (MIT).
 // Comparison-only ablation; see docs/fixed-kernel.md for the bounds.
-use crate::{Error, ALPHABET, DECODE};
+use crate::{ALPHABET, DECODE, Error};
 #[path = "radix4_tables.rs"]
 mod tables;
 

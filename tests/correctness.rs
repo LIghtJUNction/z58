@@ -1,6 +1,6 @@
 mod reference;
 
-use z58::{decode, encode, Error};
+use z58::{Error, decode, encode};
 
 fn check(input: &[u8]) {
     let expected = reference::encode(input);
