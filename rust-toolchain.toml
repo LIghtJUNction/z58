@@ -7,3 +7,5 @@ components = ["rustfmt", "clippy"]
 # Comparison lock recovery is validated in release automation.
 # Comparison lock regression assertion corrected.
 # Rust 2024 Edition migration release gate.
+
+# Rust 2024 Edition: release verified 1.99.1 compatibility update.
