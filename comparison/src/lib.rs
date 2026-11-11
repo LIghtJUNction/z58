@@ -347,7 +347,7 @@ pub fn radix64_decode(input: &[u8], out: &mut [u8], work: &mut [u64]) -> Result<
 // Call Braid58's unmodified public C API to give it caller-owned output without
 // the additional inline-result-to-slice copy required by its Rust encode API.
 // This FFI is confined to comparison; z58 has no C code or unsafe code.
-extern "C" {
+unsafe extern "C" {
     fn braid58_encode_32(input: *const u8, output: *mut std::ffi::c_char) -> usize;
     fn braid58_encode_64(input: *const u8, output: *mut std::ffi::c_char) -> usize;
 }
