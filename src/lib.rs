@@ -142,7 +142,7 @@ const fn scaled_ceil(n: usize, mul: usize, div: usize) -> Option<usize> {
         None => return None,
     };
     // The largest remainder numerator is 69_361; widen so 16-bit usize is safe too.
-    let remainder = ((n % div) as u64 * mul as u64 + div as u64 - 1) / div as u64;
+    let remainder = ((n % div) as u64 * mul as u64).div_ceil(div as u64);
     whole.checked_add(remainder as usize)
 }
 
@@ -175,7 +175,7 @@ pub const fn encode_scratch_len(input_len: usize) -> Option<usize> {
 /// `ceil(n / 4)` is safe even when every input character is a leading `1`.
 /// The addition is arranged to remain valid at `usize::MAX`.
 pub const fn decode_scratch_len(input_len: usize) -> Option<usize> {
-    Some(input_len / 4 + (input_len % 4 != 0) as usize)
+    Some(input_len / 4 + (!input_len.is_multiple_of(4)) as usize)
 }
 
 pub(crate) fn validate(input: &[u8]) -> Result<(), Error> {
